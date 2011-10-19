@@ -109,12 +109,7 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				516D336D13C6538E000B5B89 /* list_view.rb */,
-				517FC85F11FB874100B8B584 /* window_controller.rb */,
-				517FC86711FB88E900B8B584 /* view_controller.rb */,
-				51B4591012074B6D00BA7EB4 /* objc_ext.rb */,
-				51B455CA1203AC4700BA7EB4 /* node.rb */,
-				517FCA2C11FC5EBE00B8B584 /* irb_ext.rb */,
+				130915CA140E335C0065703C /* InteractiveMacRuby */,
 				517FC85711FB850200B8B584 /* application_delegate.rb */,
 			);
 			name = Classes;
@@ -137,6 +132,19 @@
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
 			);
 			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		130915CA140E335C0065703C /* InteractiveMacRuby */ = {
+			isa = PBXGroup;
+			children = (
+				516D336D13C6538E000B5B89 /* list_view.rb */,
+				517FC85F11FB874100B8B584 /* window_controller.rb */,
+				517FC86711FB88E900B8B584 /* view_controller.rb */,
+				51B4591012074B6D00BA7EB4 /* objc_ext.rb */,
+				51B455CA1203AC4700BA7EB4 /* node.rb */,
+				517FCA2C11FC5EBE00B8B584 /* irb_ext.rb */,
+			);
+			name = InteractiveMacRuby;
 			sourceTree = "<group>";
 		};
 		19C28FACFE9D520D11CA2CBB /* Products */ = {

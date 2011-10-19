@@ -136,7 +136,12 @@ module IRB
       end
 
       def children
-        @children ||= self.class.children.map { |m| send(m) }.compact
+        if ! @children
+          @children = self.class.children.map { |m| send(m) }.compact
+          # if self.class.eql? ObjectNode
+          #   @children = @children + self.inPlaceInstanceVariableNodes
+          # end
+        end
       end
 
       def descriptionNode
@@ -172,12 +177,26 @@ module IRB
         unless variables.empty?
           BlockListNode.alloc.initWithBlockAndvalue("Instance variables") do
             variables.map do |name|
-              obj = @object.instance_variable_get(name)
-              ObjectNode.alloc.initWithObject(obj, value: name)
+							begin
+								obj = @object.instance_variable_get(name)
+								ObjectNode.alloc.initWithObject(obj, value: name)
+							rescue Exception => e
+								ObjectNode.alloc.initWithObject('Error retrieving state', value: name)
+							end
             end
           end
         end
       end
+
+			def inPlaceInstanceVariableNodes
+        variables = @object.instance_variables
+				nodes = variables.inject([]) do |r, name|
+					obj = @object.instance_variable_get(name)
+					objNode = ObjectNode.alloc.initWithObject(obj, value: name)
+					r << objNode
+					r
+				end
+			end
     end
 
     class ModNode < ObjectNode

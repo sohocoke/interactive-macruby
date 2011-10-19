@@ -6,6 +6,15 @@ require 'irb/ext/colorize'
 module IRB
   # TODO changes to core classes that need to go back into dietrb
 
+	# loads files with 'def-repl' in filename.
+	def self.load_repl
+		Dir.glob('**/*dev-repl*').each do |f|
+			puts "load file #{f}"
+			load f
+		end
+	end
+	
+
   class Context
     def evaluate(source)
       result = __evaluate__(source.to_s, '(irb)', @line - @source.buffer.size + 1)

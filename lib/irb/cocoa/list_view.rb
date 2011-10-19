@@ -55,7 +55,7 @@ class NestedListView < NSView
 
   def nodes=(array)
     listViewItems.each(&:removeFromSuperview)
-    @nodes = array.dup
+    @nodes = array ? array.dup : []
     @nodes.each_with_index do |node, i|
       addListItem(ListViewItem.itemWithNode(node))
     end
@@ -352,7 +352,15 @@ class ListViewItem < NSView
     @contentView.bezeled     = false
     @contentView.editable    = false
     @contentView.selectable  = true
-    @contentView.stringValue = @node.value
+		stringValue = @node.value
+		if stringValue.length > 200	# HACK
+			if ! (stringValue.class.ancestors.include? NSString)
+				stringValue = stringValue.string
+			end
+			
+			stringValue = String.new(stringValue)[0..200] << "..(truncated)"
+		end
+    @contentView.stringValue = stringValue
     addSubview(@contentView)
   end
 
