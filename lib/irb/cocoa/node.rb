@@ -138,9 +138,10 @@ module IRB
       def children
         if ! @children
           @children = self.class.children.map { |m| send(m) }.compact
-          # if self.class.eql? ObjectNode
-          #   @children = @children + self.inPlaceInstanceVariableNodes
-          # end
+          if self.class.eql? ObjectNode
+            @children = @children + self.inPlaceInstanceVariableNodes
+          end
+          @children
         end
       end
 
