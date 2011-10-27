@@ -5,6 +5,7 @@
 # TODO use a data source, in this case the view controller, to get the nodes and line numbers?
 
 class ScrollableListView < NSScrollView
+
   class ClipViewWithGutter < NSClipView
     GUTTER_COLOR = NSColor.colorWithCalibratedWhite(0.9, alpha:1)
 
@@ -241,6 +242,8 @@ class ListView < NestedListView
 end
 
 class ListViewItem < NSView
+	MAX_STRING_LENGTH = 2000
+
   class TextField < NSTextField
     def menu
       enclosingScrollView.contentView.menu
@@ -353,12 +356,12 @@ class ListViewItem < NSView
     @contentView.editable    = false
     @contentView.selectable  = true
 		stringValue = @node.value
-		if stringValue.length > 200	# HACK
+		if stringValue.length > MAX_STRING_LENGTH	# HACK
 			if ! (stringValue.class.ancestors.include? NSString)
 				stringValue = stringValue.string
 			end
 			
-			stringValue = String.new(stringValue)[0..200] << "..(truncated)"
+			stringValue = String.new(stringValue)[0..MAX_STRING_LENGTH] << "..(truncated)"
 		end
     @contentView.stringValue = stringValue
     addSubview(@contentView)
