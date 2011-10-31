@@ -6,34 +6,6 @@ require 'irb/ext/colorize'
 module IRB
   # TODO changes to core classes that need to go back into dietrb
 
-  # set up repl context appropriately to needs in files in the project folder matching name '*.rb-repl', and load using this method.
-  # a sample in one of my projects:
-  # $dc = { 
-  # 	w: NSApp.windows[0], 
-  # 	ad: NSApp.delegate
-  # }
-  # TODO not really coupled to the IRB module - find the right place
-  def self.load_repl
-    Dir.glob('**/*.rb-repl').each do |f|
-      load_verbose f
-    end
-  end
-
-  def self.load_rc
-    load_verbose '~/.irbrc'
-  end
-
-  def self.load_verbose( f )
-    puts "load file #{f}"
-    Kernel.load f
-  end
-
-  def self.load_all
-    self.load_rc
-    self.load_repl
-  end
-
-
   class Context
     def evaluate(source)
       result = __evaluate__(source.to_s, '(irb)', @line - @source.buffer.size + 1)
@@ -201,3 +173,32 @@ IRB.formatter.filter_from_backtrace[0] = Regexp.new("^#{actual_irb_location}/irb
 
 IRB.formatter.filter_from_backtrace << Regexp.new("^#{NSBundle.mainBundle.bundlePath}")
 $stdout = IRB::Driver::OutputRedirector.new
+
+
+module Kernel
+  # set up repl context appropriately to needs in files in the project folder matching name '*.rb-repl', and load using this method.
+  # a sample in one of my projects:
+  # $dc = { 
+  # 	w: NSApp.windows[0], 
+  # 	ad: NSApp.delegate
+  # }
+  def load_repl
+    Dir.glob('**/*.rb-repl').each do |f|
+      load_verbose f
+    end
+  end
+
+  def load_rc
+    load_verbose '~/.irbrc'
+  end
+
+  def load_verbose( f )
+    puts "load file #{f}"
+    load f
+  end
+
+  def load_all
+    load_rc
+    load_repl
+  end
+end
