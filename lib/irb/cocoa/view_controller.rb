@@ -244,6 +244,7 @@ class IRBViewController < NSViewController
 end
 
 module Kernel
+  # ASP weird placement.
   def irb(object, binding = nil)
     IRBWindowController.performSelectorOnMainThread("windowWithObjectAndBinding:",
                                                     withObject: [object, binding],
@@ -259,6 +260,7 @@ module Kernel
                                           defer:false)
     window.title = "Window for: #{NSApp.mainWindow.title}"
     window.orderWindow(NSWindowBelow, relativeTo:NSApp.mainWindow.windowNumber)
+    window
   end
   private :window
 end
