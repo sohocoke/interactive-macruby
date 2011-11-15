@@ -183,9 +183,10 @@ module Kernel
   # 	ad: NSApp.delegate
   # }
   def load_repl
-    Dir.glob('**/*.rb-repl').each do |f|
+    load_results = Dir.glob('**/*.rb-repl').each do |f|
       load_verbose f
     end
+    load_results
   end
 
   def load_rc
@@ -201,4 +202,10 @@ module Kernel
     load_rc
     load_repl
   end
+  
+  def load_src( src )
+  	raise "$project_src_dir undefined." if ! $project_src_dir
+  	load File.join( File.expand_path($project_src_dir), src.to_s + ".rb" )
+  end
+
 end
