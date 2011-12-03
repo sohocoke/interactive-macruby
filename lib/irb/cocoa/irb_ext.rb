@@ -204,8 +204,14 @@ module Kernel
   end
   
   def load_src( src )
-  	raise "$project_src_dir undefined." if ! $project_src_dir
-  	load File.join( File.expand_path($project_src_dir), src.to_s + ".rb" )
+  	raise "$project_src_dir undefined." if ! $project_src_dirs
+    $project_src_dirs.each { |dir|
+      file = File.join File.expand_path(dir), src.to_s + ".rb"
+      if File.exists? file
+      	load file
+        puts "loaded file #{file}"
+      end
+    }
   end
 
 end
