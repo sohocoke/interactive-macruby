@@ -15,7 +15,7 @@ class IRBWindowController < NSWindowController
     #   frame.origin.x  = point.x
     #   frame.origin.y  = point.y
     # else
-      frame = NSMakeRect(100, 100, 600, 400)
+      frame = NSMakeRect(0, 3000, 600, 400)
     # end
 
     window = NSWindow.alloc.initWithContentRect(frame,
