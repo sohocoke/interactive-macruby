@@ -214,4 +214,48 @@ module Kernel
     }
   end
 
+
+  HISTORY_FILE = '/tmp/InteractiveMacRuby-history.rb'
+
+  def irb_controller
+    controller = i(IRBViewController)
+    controller.kind_of?(Array) ? controller.last : controller
+  end
+
+  def last_history
+    history_item_array = irb_controller.history
+  end
+
+  def set_recall(history_item_array = nil)
+    text = last_history[0..-2].join "\n"
+    File.open(HISTORY_FILE, 'w') { |f| f.write text }
+    `open #{HISTORY_FILE}`
+  end
+
+  def recall
+    load_all
+    history_item_array = File.open(HISTORY_FILE).split "\n"
+    irb_controller.instance_variable_set(:@history, history_item_array)
+    history_item_array.join "\n"
+  end
+
+  def run_history
+    last_history.each do |h_item|
+      eval h_item
+    end
+  end
+
 end
+
+
+module Kernel
+    # we need this to:
+    # - get self to point to the right thing.
+    # - use instance_eval to recall correctly.
+  def new_eval_context
+    # receive input and eval using current binding.
+  end
+end
+
+
+    

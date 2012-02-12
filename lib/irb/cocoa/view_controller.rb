@@ -10,7 +10,8 @@ class IRBViewController < NSViewController
 
   attr_reader :output
   attr_reader :context
-
+  attr_reader :history
+  
   def initWithObject(object, binding: binding, delegate: delegate)
     if init
       @delegate = delegate
@@ -243,12 +244,18 @@ class IRBViewController < NSViewController
   end
 end
 
+# ASP weird placement.
 module Kernel
-  # ASP weird placement.
   def irb(object, binding = nil)
     IRBWindowController.performSelectorOnMainThread("windowWithObjectAndBinding:",
                                                     withObject: [object, binding],
                                                     waitUntilDone: true)
+
+    unless @irb_loaded_all
+      load_all
+      @irb_loaded_all = true
+    end
+    
     nil
   end
   private :irb
