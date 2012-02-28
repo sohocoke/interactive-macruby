@@ -166,6 +166,11 @@ class IRBViewController < NSViewController
   end
 
   def control(control, textView:textView, completions:completions, forPartialWordRange:range, indexOfSelectedItem:item)
+		if textView.string
+			puts "#{textView} returned nil string. aborting completion.."
+			return
+		end
+		
     @completion.call(textView.string).map { |s| s[range.location..-1] }
   end
   
