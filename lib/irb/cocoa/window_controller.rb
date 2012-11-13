@@ -43,7 +43,7 @@ class IRBWindowController < NSWindowController
   end
 
   def receivedResult(viewController)
-    window.title = viewController.context.object.inspect
+    window.title = viewController.context.object.to_s[0..50]
   end
 
   # TODO properly set the view controller as first responder so we don't need to delegate any longer
