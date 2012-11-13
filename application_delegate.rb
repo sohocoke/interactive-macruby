@@ -1,11 +1,11 @@
+require 'defaults-macruby'
+
 TOPLEVEL_OBJECT = self
 
-class ApplicationDelegate
-  def applicationWillFinishLaunching(notification)
-    newTopLevelObjectSession(nil)
-  end
-
-  def newTopLevelObjectSession(sender)
-    irb(TOPLEVEL_OBJECT, TOPLEVEL_BINDING.dup)
-  end
-end
+# class ApplicationDelegate
+#   def newTopLevelObjectSession(sender)
+#   	watch_if Defaults[:console_on_launch] do
+# 	    irb(TOPLEVEL_OBJECT, TOPLEVEL_BINDING.dup)
+# 	  end
+#   end
+# end
