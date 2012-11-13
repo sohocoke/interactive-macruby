@@ -174,16 +174,3 @@ IRB.formatter.filter_from_backtrace[0] = Regexp.new("^#{actual_irb_location}/irb
 IRB.formatter.filter_from_backtrace << Regexp.new("^#{NSBundle.mainBundle.bundlePath}")
 $stdout = IRB::Driver::OutputRedirector.new
 
-
-
-module Kernel
-    # we need this to:
-    # - get self to point to the right thing.
-    # - use instance_eval to recall correctly.
-  def new_eval_context
-    # receive input and eval using current binding.
-  end
-end
-
-
-    
