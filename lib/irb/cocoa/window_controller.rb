@@ -1,4 +1,7 @@
+require 'irb_state'
+
 class IRBWindowController < NSWindowController
+
   def self.windowWithObjectAndBinding(args)
     object, binding = args
     alloc.initWithObject(object, binding: binding).showWindow(self)
