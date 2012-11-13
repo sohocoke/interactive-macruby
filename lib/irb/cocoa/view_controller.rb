@@ -255,12 +255,6 @@ module Kernel
     IRBWindowController.performSelectorOnMainThread("windowWithObjectAndBinding:",
                                                     withObject: [object, binding],
                                                     waitUntilDone: true)
-
-    unless @irb_loaded_all
-      load_all
-      @irb_loaded_all = true
-    end
-    
     nil
   end
   private :irb
