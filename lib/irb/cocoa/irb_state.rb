@@ -32,6 +32,76 @@ class IRBState
 
 #=
 
+  # reload source
+  def load_src( src = nil )
+    @irb_src_history ||= InteractiveHistory.load NSBundle.mainBundle.bundleIdentifier + ".hotloaded"
+
+    if src
+      if src.kind_of? Integer
+        src = @irb_src_history.get(src)
+      end
+      
+      @irb_src_history.add src
+    else
+      # print the guideline.
+      puts "no args given. history:"
+      puts @irb_src_history.to_s
+      
+      return
+    end
+
+  	raise "$project_src_dir undefined." if ! $project_src_dirs
+    $project_src_dirs.each { |dir|
+      file = File.join File.expand_path(dir), src.to_s
+      file += ".rb" unless src.to_s =~ /\.rb$/
+      if File.exists? file
+      	load file
+        puts "loaded file #{file}"
+        return
+      end
+
+      puts "couldn't load file #{file}"
+    }
+    
+  # sketch of an enhanced version that supports interactive mode:
+  # > load_src
+  # 3: file-x
+  # 2: file-y
+  # 1: file-z
+  # select recent item or a new source file:
+  # >> [choice or file] 
+  # loaded.
+
+  end
+
+  # watch and reload changed source files
+  def watch_src
+    raise "$project_src_dir undefined." if ! $project_src_dirs
+
+    dirs = $project_src_dirs.map { |dir| dir.stringByExpandingTildeInPath }
+    options = FSEvent::CLI.parse(dirs.dup << '--file-events')
+    format = options[:format]
+
+    notifier = FSEvent::Notifier.new
+    options[:urls].each do |url|
+      puts "watching #{url.path} with options #{options}"
+      notifier.watch(url.path, *options[:create_flags], options) do |event_list|
+        event_list.events.each do |event|
+          puts "reload #{event.path}"
+          self.load_src File.basename(event.path.to_s)
+
+          if block_given?
+            puts "yield to block"
+            yield
+          end
+        end
+      end
+    end
+    notifier.run
+  end
+  
+#=
+
   # AP history checkpointing. OMG it's so hacky
 
   HISTORY_FILE = '/tmp/InteractiveMacRuby-history.rb'
