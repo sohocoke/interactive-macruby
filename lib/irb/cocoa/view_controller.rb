@@ -259,7 +259,7 @@ module Kernel
   end
   private :irb
 
-  def window(frame = NSMakeRect(50, 50, 640, 480))
+  def new_window(frame = NSMakeRect(50, 50, 640, 480))
     window = NSWindow.alloc.initWithContentRect(frame,
                                       styleMask:NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask,
                                         backing:NSBackingStoreBuffered,
@@ -268,5 +268,5 @@ module Kernel
     window.orderWindow(NSWindowBelow, relativeTo:NSApp.mainWindow.windowNumber)
     window
   end
-  private :window
+  private :new_window
 end
