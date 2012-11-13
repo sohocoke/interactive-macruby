@@ -166,7 +166,7 @@ class IRBViewController < NSViewController
   end
 
   def control(control, textView:textView, completions:completions, forPartialWordRange:range, indexOfSelectedItem:item)
-		if textView.string
+		if ! textView.string
 			puts "#{textView} returned nil string. aborting completion.."
 			return
 		end
