@@ -30,15 +30,7 @@ class IRBWindowController < NSWindowController
       @viewController = IRBViewController.alloc.initWithObject(object, binding: binding, delegate: self)
       window.contentView = @viewController.view
       receivedResult(@viewController)
-
-      # AP load irb files.
-      # FIXME ugly coupling.
-			@@irb_loaded_all ||= false
-      unless @@irb_loaded_all
-        $irbs.load_all
-        @@irb_loaded_all = true
-      end
-    
+      
       self
     end
   end

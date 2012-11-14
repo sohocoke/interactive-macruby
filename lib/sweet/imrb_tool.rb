@@ -240,7 +240,5 @@ class IRBTool
   include InteractiveHistory
 end
 
-# global var for handy access when interactive.
-$tool = IRBTool.new
 
 
