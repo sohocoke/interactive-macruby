@@ -1,13 +1,14 @@
+require 'rubygems'
 require 'mrb-fsevent'
 require 'mrb-fsevent/cli'
 
-class IRBState
-
+module IRBLoader
+  
   # set up repl context appropriately to needs in files in the project folder matching name '*.rb-repl', and load using this method.
   # a sample in one of my projects:
   # $dc = { 
-  # 	w: NSApp.windows[0], 
-  # 	ad: NSApp.delegate
+  #   w: NSApp.windows[0], 
+  #   ad: NSApp.delegate
   # }
   def load_repl # RENAME load_repl_state
     load_results = Dir.glob('**/*.rb-repl').each do |f|
@@ -50,19 +51,20 @@ class IRBState
       return
     end
 
-  	raise "$project_src_dir undefined." if ! $project_src_dirs
+    raise "$project_src_dir undefined." if ! $project_src_dirs
     $project_src_dirs.each { |dir|
       file = File.join File.expand_path(dir), src.to_s
       file += ".rb" unless src.to_s =~ /\.rb$/
       if File.exists? file
-      	load file
+        load file
         puts "loaded file #{file}"
         return
       end
 
       puts "couldn't load file #{file}"
     }
-    
+	end
+	
   # sketch of an enhanced version that supports interactive mode:
   # > load_src
   # 3: file-x
@@ -71,8 +73,6 @@ class IRBState
   # select recent item or a new source file:
   # >> [choice or file] 
   # loaded.
-
-  end
 
   # watch and reload changed source files
   def watch_src
@@ -99,11 +99,17 @@ class IRBState
     end
     notifier.run
   end
-  
+	
+  alias_method :ls, :load_src
+
+end
+
+
 #=
 
-  # AP history checkpointing. OMG it's so hacky
+ # AP history checkpointing. OMG it's so hacky
 
+module IRBHistory
   HISTORY_FILE = '/tmp/InteractiveMacRuby-history.rb'
 
   def recall_set(history = nil)
@@ -130,12 +136,12 @@ class IRBState
     end
   end
 
-  alias_method :ls, :load_src
 
   def irb_history
     history_item_array = irb_controller.history
   end
 
+  # FIXME select the current controller, not the last.
   def irb_controller
     controller = i(IRBViewController)
     controller.kind_of?(Array) ? controller.last : controller
@@ -143,11 +149,9 @@ class IRBState
 
 end
 
-# global var for handy access
-$irbs = IRBState.new
 
-
-class InteractiveHistory
+module InteractiveHistory
+	
   def initialize(save_id = nil, data = nil)
     if data
       @items = data
@@ -225,5 +229,18 @@ class InteractiveHistory
     # STUB
     '/tmp'
   end
+
 end
+
+
+#=
+
+class IRBTool
+  include IRBLoader
+  include InteractiveHistory
+end
+
+# global var for handy access when interactive.
+$tool = IRBTool.new
+
 

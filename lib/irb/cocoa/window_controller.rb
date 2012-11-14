@@ -1,4 +1,4 @@
-require 'irb_state'
+require 'sweet/imrb_tool'
 
 class IRBWindowController < NSWindowController
 
@@ -32,6 +32,7 @@ class IRBWindowController < NSWindowController
       receivedResult(@viewController)
 
       # AP load irb files.
+      # FIXME ugly coupling.
 			@@irb_loaded_all ||= false
       unless @@irb_loaded_all
         $irbs.load_all
