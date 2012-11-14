@@ -3,8 +3,10 @@
 TOPLEVEL_OBJECT = self
 
 class ApplicationDelegate
+	#include DefaultsAccess
+	
   def newTopLevelObjectSession(sender)
-		#	watch_if Defaults[:console_on_launch] do
+		#	watch_if default( :console_on_launch ) do
 
 			# global var for handy access when interactive.
 			$tool ||= IRBTool.new
