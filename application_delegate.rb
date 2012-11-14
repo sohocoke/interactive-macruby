@@ -1,3 +1,4 @@
+require 'sweet/imrb_tool'
 # require 'defaults'
 
 TOPLEVEL_OBJECT = self

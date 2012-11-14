@@ -1,5 +1,3 @@
-require 'sweet/imrb_tool'
-
 class IRBWindowController < NSWindowController
 
   def self.windowWithObjectAndBinding(args)
