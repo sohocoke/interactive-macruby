@@ -237,7 +237,7 @@ end
 
 class IRBTool
   include IRBLoader
-  include InteractiveHistory
+  include IRBHistory
 end
 
 
