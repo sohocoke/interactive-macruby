@@ -12,11 +12,16 @@ class ApplicationDelegate
 			# global var for handy access when interactive.
 			$tool ||= IRBTool.new
 
-      # load irb files.
-			@@irb_loaded_all ||= false
-      unless @@irb_loaded_all
+			@@irb_global_inited ||= false
+      unless @@irb_global_inited
+      	
+      	# load irb files.
         $tool.load_all
-        @@irb_loaded_all = true
+        @@irb_global_inited = true
+      
+      	# watch for hotloading.
+      	$tool.watch_src
+
       end
 
 	    irb(TOPLEVEL_OBJECT, TOPLEVEL_BINDING.dup)
