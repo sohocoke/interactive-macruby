@@ -109,11 +109,11 @@ end
 
  # AP history checkpointing. OMG it's so hacky
 
-module IRBHistory
+module HistoryPersistence
   HISTORY_FILE = '/tmp/InteractiveMacRuby-history.rb'
 
   def recall_set(history = nil)
-    history = irb_history unless history
+    history = irb.history unless history
 
     text = history[0..-2].join "\n"
     File.open(HISTORY_FILE, 'w') { |f| f.write text }
@@ -123,7 +123,7 @@ module IRBHistory
   # doesn't evaluate yet - do that with eval_h after.
   def recall
     history_item_array = File.open(HISTORY_FILE).to_a
-    irb_controller.instance_variable_set(:@history, history_item_array)
+    last_controller.instance_variable_set(:@history, history_item_array)  # should be current controller FIXME
 
     # if i want to evaluate, i'd do it here.
     
@@ -131,18 +131,13 @@ module IRBHistory
   end
 
   def eval_h
-    irb_history.each do |h_item|
+    irb.history.each do |h_item|
       eval h_item
     end
   end
 
 
-  def irb_history
-    history_item_array = irb_controller.history
-  end
-
-  # FIXME select the current controller, not the last.
-  def irb_controller
+  def last_controller
     controller = i(IRBViewController)
     controller.kind_of?(Array) ? controller.last : controller
   end
@@ -237,7 +232,7 @@ end
 
 class IRBTool
   include IRBLoader
-  include IRBHistory
+  include HistoryPersistence
 end
 
 
