@@ -113,7 +113,7 @@ module HistoryPersistence
   HISTORY_FILE = '/tmp/InteractiveMacRuby-history.rb'
 
   def recall_set(history = nil)
-    history = irb.history unless history
+    history = last_history unless history
 
     text = history[0..-2].join "\n"
     File.open(HISTORY_FILE, 'w') { |f| f.write text }
@@ -131,12 +131,16 @@ module HistoryPersistence
   end
 
   def eval_h
-    irb.history.each do |h_item|
+    last_history.each do |h_item|
       eval h_item
     end
   end
 
 
+  def last_history
+    last_controller.history
+  end
+  
   def last_controller
     controller = i(IRBViewController)
     controller.kind_of?(Array) ? controller.last : controller
