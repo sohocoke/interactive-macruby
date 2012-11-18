@@ -150,7 +150,7 @@ module IRBHistory
 end
 
 
-module InteractiveHistory
+class InteractiveHistory
 	
   def initialize(save_id = nil, data = nil)
     if data
