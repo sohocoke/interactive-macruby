@@ -101,6 +101,7 @@ class IRBViewController < NSViewController
     node = BasicNode.alloc.initWithPrefix(@context.line, value:line)
     addConsoleNode(node, updateCurrentLine:true)
 
+    # FIXME check thread state and re-init if dead.
     @thread[:input] = line
     @thread.run
 
@@ -166,12 +167,18 @@ class IRBViewController < NSViewController
   end
 
   def control(control, textView:textView, completions:completions, forPartialWordRange:range, indexOfSelectedItem:item)
-		if ! textView.string
-			puts "#{textView} returned nil string. aborting completion.."
+		if textView.string.to_s.empty?
+			NSLog "#{textView} returned nil / empty string. aborting completion.."
 			return
 		end
 		
-    @completion.call(textView.string).map { |s| s[range.location..-1] }
+    completions = @completion.call(textView.string)
+    if ! completions
+      NSLog "nil completions for '#{textView.string}'"
+      return
+    end
+
+    completions.map { |s| s[range.location..-1] }
   end
   
   def control(control, textView: textView, doCommandBySelector: selector)
@@ -264,8 +271,8 @@ module Kernel
                                       styleMask:NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask,
                                         backing:NSBackingStoreBuffered,
                                           defer:false)
-    window.title = "Window for: #{NSApp.mainWindow.title}"
-    window.orderWindow(NSWindowBelow, relativeTo:NSApp.mainWindow.windowNumber)
+    window.title = "Window for: #{NSApp.mainWindow ? NSApp.mainWindow.title: '<no main window>' }"
+    window.orderWindow(NSWindowBelow, relativeTo:NSApp.mainWindow.windowNumber) if NSApp.mainWindow
     window
   end
   private :new_window
