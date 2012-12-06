@@ -192,9 +192,13 @@ module IRB
 			def inPlaceInstanceVariableNodes
         variables = @object.instance_variables
 				nodes = variables.inject([]) do |r, name|
-					obj = @object.instance_variable_get(name)
-					objNode = ObjectNode.alloc.initWithObject(obj, value: name)
-					r << objNode
+					begin
+						obj = @object.instance_variable_get(name[0] == '@' ? name : "@#{name}") # some class (eg exceptions) seem to have ivars defined without a @ prefix
+						objNode = ObjectNode.alloc.initWithObject(obj, value: name)
+						r << objNode
+					rescue Exception => e
+						NSLog "#{e.inspect}, #{e.backtrace.first}"
+					end
 					r
 				end
 			end
