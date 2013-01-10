@@ -103,7 +103,12 @@ class IRBViewController < NSViewController
 
     # FIXME check thread state and re-init if dead.
     @thread[:input] = line
+    begin
     @thread.run
+    rescue Exception => e
+      NSLog "!! exception on thread #{@thread} - #{e}"
+    end
+
 
     @sourceValidationBuffer << line
     if @sourceValidationBuffer.code_block? && !@sourceValidationBuffer.syntax_error?
