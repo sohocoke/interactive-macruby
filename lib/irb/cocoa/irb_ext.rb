@@ -21,6 +21,7 @@ module IRB
 
     def report_result(result)
       output(formatter.result(result))
+      # TODO figure out how to extend formatter to deal with exceptions.
     end
 
     def report_exception(exception)
