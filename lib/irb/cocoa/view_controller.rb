@@ -101,20 +101,10 @@ class IRBViewController < NSViewController
     node = BasicNode.alloc.initWithPrefix(@context.line, value:line)
     addConsoleNode(node, updateCurrentLine:true)
 
-    # we should be able to make this run in the main thread. based on a flag, allow a proc to dispatch to main thread
-
-
+    # FIXME check thread state and re-init if dead.
     @thread[:input] = line
-
     begin
-      # check thread state and re-init if dead.
-      unless @thread.alive?
-        NSLog "#{@thread.inspect} dead - creating a new one."
-        @thread = new_thread
-      end
-
-      @thread.run
-
+    @thread.run
     rescue Exception => e
       NSLog "!! exception on thread #{@thread} - #{e}"
     end
@@ -252,30 +242,18 @@ class IRBViewController < NSViewController
     @completion   = IRB::Completion.new(@context)
     @sourceValidationBuffer = IRB::Source.new
 
-    @thread = new_thread
-  end
-
-  def new_thread
-    Thread.new(self, @context) do |controller, context|
+    @thread = Thread.new(self, @context) do |controller, context|
       IRB::Driver.current = controller
       Thread.stop # stop now, there's no input yet
       
       loop do
         if line = Thread.current[:input]
-          # Thread.current[:input] = nil
-          # unless context.process_line(line)
-          #   controller.performSelectorOnMainThread("terminate",
-          #                               # withObject: nil,
-          #                            # waitUntilDone: false)
-
-          #   raise "process_line returned nada"
-          # end
-
-          runner = Runner.new
-          runner.on_main = true
-          result = runner.run line, @context
-          context.report_result result
-
+          Thread.current[:input] = nil
+          unless context.process_line(line)
+            controller.performSelectorOnMainThread("terminate",
+                                        withObject: nil,
+                                     waitUntilDone: false)
+          end
           Thread.stop # done processing, stop and await new input
         end
       end
@@ -303,14 +281,4 @@ module Kernel
     window
   end
   private :new_window
-end
-
-
-class Runner
-  attr_accessor :on_main  # set to true to run stuff on the main thread
-
-  def run( input , context )
-    context.process_line input  # this will call a report_* method
-  end
-
 end
