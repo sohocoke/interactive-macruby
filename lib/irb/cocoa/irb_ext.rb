@@ -8,7 +8,29 @@ module IRB
 
   class Context
     def evaluate(source)
-      result = __evaluate__(source.to_s, '(irb)', @line - @source.buffer.size + 1)
+      NSLog "evaluate '#{source}'"
+      evaluate = lambda {
+        return __evaluate__(source.to_s, '(irb)', @line - @source.buffer.size + 1)
+      }
+
+      @result = @e = nil
+
+      if NSThread.currentThread == NSThread.mainThread
+        # this case probably won't happen with imrb but let's be cautious.
+        @result = evaluate.call
+      else
+        Dispatch::Queue.main.sync do
+          begin
+            @result = evaluate.call
+          rescue Exception => e
+            @e = e            
+          end
+        end
+
+        throw @e if @e
+      end
+      result = @result
+
       unless result == IGNORE_RESULT
         store_result(result)
         report_result(result)
@@ -25,6 +47,7 @@ module IRB
     end
 
     def report_exception(exception)
+      NSLog "formatting exception"
       output(formatter.exception(exception))
     end
 
@@ -55,6 +78,7 @@ module IRB
 
   class Formatter
     def filter_backtrace(backtrace)
+      NSLog "filtering #{backtrace} called from #{caller}"
       backtrace.reject do |line|
         @filter_from_backtrace.any? { |pattern| pattern.match(line) }
       end.map do |line|
@@ -64,6 +88,11 @@ module IRB
           line
         end
       end
+    end
+
+    # report the full stacktrace back.
+    def exception( e )
+      e.to_s + "\n" + e.backtrace.join("\n")
     end
   end
 
@@ -146,6 +175,7 @@ module IRB
       end
 
       def colorize_token(type, token)
+        token ||= "nil token!"
         attrs = { NSForegroundColorAttributeName => color(type) || NSColor.blackColor }
         NSAttributedString.alloc.initWithString(token, attributes:attrs)
       end
@@ -153,13 +183,20 @@ module IRB
       def colorize(str)
         result = NSMutableAttributedString.new
         Ripper.lex(str).each do |_, type, token|
-          result.appendAttributedString(colorize_token(type, token))
+          unless type && token
+            puts "something unexpected is nil. type=#{type}, token=#{token}. returning empty result."
+            puts "investigate colorize(str) for more info"
+          else
+            result.appendAttributedString(colorize_token(type, token))
+          end
         end
         result
       end
 
       def result(object)
         colorize(inspect_object(object))
+      rescue Exception
+        colorize(inspect_object(object.to_s))
       end
     end
   end
@@ -174,4 +211,6 @@ IRB.formatter.filter_from_backtrace[0] = Regexp.new("^#{actual_irb_location}/irb
 
 IRB.formatter.filter_from_backtrace << Regexp.new("^#{NSBundle.mainBundle.bundlePath}")
 $stdout = IRB::Driver::OutputRedirector.new
-
+def $stdout.<<( str )
+  self.write( str )
+end
