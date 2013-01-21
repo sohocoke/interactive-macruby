@@ -10,14 +10,18 @@ module IRBLoader
   #   w: NSApp.windows[0], 
   #   ad: NSApp.delegate
   # }
-  def load_repl # RENAME load_repl_state
-    load_results = Dir.glob('**/*.rb-repl').each do |f|
-      load_verbose f
+  def load_rc # RENAME load_repl_state
+    load_results = Dir.glob('**/*.rc.rb').each do |f|
+      begin
+				load_verbose f
+      rescue Exception => e
+        NSLog "while loading #{f}, got: #{e} #{caller}"        
+      end
     end
     load_results
   end
 
-  def load_rc
+  def load_global_rc
     load_verbose '~/.irbrc'
   end
 
@@ -27,8 +31,14 @@ module IRBLoader
   end
 
   def load_all
+    load_global_rc
     load_rc
-    load_repl
+  end
+
+  def copy_to_bundle( file )  # it's like it has a -p
+    to_dir = NSBundle.mainBundle.resourcePath
+
+    # now we need smoe deps to values in the rc file.
   end
 
 #=
@@ -88,7 +98,13 @@ module IRBLoader
       notifier.watch(url.path, *options[:create_flags], options) do |event_list|
         event_list.events.each do |event|
           puts "reload #{event.path}"
-          self.load_src File.basename(event.path.to_s)
+          if event.path.to_s =~ /\.rb/
+            self.load_src File.basename(event.path.to_s)
+          else
+            # treat it as a resource
+            relative_path # TODO
+            copy_to_bundle relative_path
+          end
 
           if block_given?
             puts "yield to block"

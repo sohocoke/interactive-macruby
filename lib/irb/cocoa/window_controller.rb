@@ -2,7 +2,9 @@ class IRBWindowController < NSWindowController
 
   def self.windowWithObjectAndBinding(args)
     object, binding = args
-    alloc.initWithObject(object, binding: binding).showWindow(self)
+    instance = alloc.initWithObject(object, binding: binding)
+    instance.showWindow(self)
+    instance.rc if instance_methods.include? :rc
   end
 
   def initWithObject(object, binding: binding)
