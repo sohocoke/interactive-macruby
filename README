@@ -1,0 +1,3 @@
+A REPL environment for Cocoa development using MacRuby.
+
+Use it as boilerplate for your application, and use the mostly IRB-compatible window to build up the app.
