@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'mrb-fsevent'
 require 'mrb-fsevent/cli'
+require 'fileutils'
 
 module IRBLoader
   
@@ -13,7 +14,7 @@ module IRBLoader
   def load_rc # RENAME load_repl_state
     load_results = Dir.glob('**/*.rc.rb').each do |f|
       begin
-				load_verbose f
+        load_verbose f
       rescue Exception => e
         NSLog "while loading #{f}, got: #{e} #{caller}"        
       end
@@ -35,16 +36,20 @@ module IRBLoader
     load_rc
   end
 
-  def copy_to_bundle( file )  # it's like it has a -p
-    to_dir = NSBundle.mainBundle.resourcePath
-
-    # now we need smoe deps to values in the rc file.
-  end
-
 #=
 
   # reload source
   def load_src( src = nil )
+    if src.to_s =~ /\.rb/
+      load_rb src
+    else
+      # treat it as a resource
+      relative_path = relative_path_given_src_dirs src
+      copy_to_bundle relative_path
+    end
+  end
+
+  def load_rb( src )
     @irb_src_history ||= InteractiveHistory.load NSBundle.mainBundle.bundleIdentifier + ".hotloaded"
 
     if src
@@ -53,16 +58,17 @@ module IRBLoader
       end
       
       @irb_src_history.add src
+
     else
       # print the guideline.
-      puts "no args given. history:"
-      puts @irb_src_history.to_s
+      puts "no args given. history: #{@irb_src_history.to_s}"
       
       return
     end
 
+    # find the file in $project_src_dirs and load.
     raise "$project_src_dir undefined." if ! $project_src_dirs
-    $project_src_dirs.each { |dir|
+    $project_src_dirs.each do |dir|
       file = File.join File.expand_path(dir), src.to_s
       file += ".rb" unless src.to_s =~ /\.rb$/
       if File.exists? file
@@ -72,9 +78,9 @@ module IRBLoader
       end
 
       puts "couldn't load file #{file}"
-    }
-	end
-	
+    end
+  end
+  
   # sketch of an enhanced version that supports interactive mode:
   # > load_src
   # 3: file-x
@@ -84,40 +90,54 @@ module IRBLoader
   # >> [choice or file] 
   # loaded.
 
+  def copy_to_bundle( file )  # it's like it has a -p
+    to_dir = NSBundle.mainBundle.resourcePath
+
+    puts "copy #{file} to #{to_dir}" 
+    FileUtils.cp file to_dir
+  end
+
+
   # watch and reload changed source files
   def watch_src
-    raise "$project_src_dir undefined." if ! $project_src_dirs
+    Dispatch::Queue.concurrent.async do
+      raise "$project_src_dir undefined." if ! $project_src_dirs
 
-    dirs = $project_src_dirs.map { |dir| dir.stringByExpandingTildeInPath }
-    options = FSEvent::CLI.parse(dirs.dup << '--file-events')
-    format = options[:format]
+      dirs = $project_src_dirs.map { |dir| dir.stringByExpandingTildeInPath }
+      options = FSEvent::CLI.parse(dirs.dup << '--file-events')
+      format = options[:format]
 
-    notifier = FSEvent::Notifier.new
-    options[:urls].each do |url|
-      puts "watching #{url.path} with options #{options}"
-      notifier.watch(url.path, *options[:create_flags], options) do |event_list|
-        event_list.events.each do |event|
-          puts "reload #{event.path}"
-          if event.path.to_s =~ /\.rb/
+      notifier = FSEvent::Notifier.new
+      options[:urls].each do |url|
+        puts "watching #{url.path} with options #{options}"
+        notifier.watch(url.path, *options[:create_flags], options) do |event_list|
+          event_list.events.each do |event|
+            puts "reload #{event.path}"
             self.load_src File.basename(event.path.to_s)
-          else
-            # treat it as a resource
-            relative_path # TODO
-            copy_to_bundle relative_path
-          end
 
-          if block_given?
-            puts "yield to block"
-            yield
+            if block_given?
+              puts "yield to block"
+              yield
+            end
           end
         end
       end
+      notifier.run
     end
-    notifier.run
   end
-	
+  
   alias_method :ls, :load_src
 
+  # HACK
+  def relative_path_given_src_dirs( path )
+    $project_src_dirs.each do |src_dir|
+      if path.include? src_dir
+        return $`.gsub('^/', '') # string after match without preceding /
+      end
+    end
+
+    raise "#{path} didn't match any path in $project_src_dirs" 
+  end
 end
 
 
@@ -166,7 +186,7 @@ end
 
 
 class InteractiveHistory
-	
+  
   def initialize(save_id = nil, data = nil)
     if data
       @items = data
