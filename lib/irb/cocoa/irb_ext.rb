@@ -27,7 +27,7 @@ module IRB
           end
         end
 
-        throw @e if @e
+        raise @e if @e
       end
       result = @result
 
