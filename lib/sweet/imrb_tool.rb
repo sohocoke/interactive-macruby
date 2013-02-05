@@ -45,7 +45,7 @@ module IRBLoader
     else
       # treat it as a resource
       relative_path = relative_path_given_src_dirs src
-      copy_to_bundle relative_path
+      copy_to_bundle relative_path if relative_path
     end
   end
 
@@ -136,7 +136,8 @@ module IRBLoader
       end
     end
 
-    raise "#{path} didn't match any path in $project_src_dirs" 
+    puts "#{path} didn't match any path in $project_src_dirs" 
+    nil
   end
 end
 
